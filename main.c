@@ -12,8 +12,7 @@ void check_malloc(void *ptr) {
 
 int main(int argc, char **argv) {
   if (argc != 2) {
-    //ELF_NAME defined in Makefile
-    fprintf(stdout, "usage: %s filename\n", ELF_NAME);
+    fprintf(stdout, "usage: ./brainfast filename\n");
     exit(0);
   }
 

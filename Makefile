@@ -1,6 +1,7 @@
 CXX = gcc
+C_FLAGS = -march=native -O1
+
 EXE = brainfast
-C_FLAGS = -march=native -O1 -DELF_NAME=\"$(EXE)\"
 
 all: main.c
 	$(CXX) $^ $(C_FLAGS) -o $(EXE)
