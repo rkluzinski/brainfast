@@ -40,6 +40,8 @@ $ make test
 Hello World! 255
 ```
 
+The test file (bitwidth.b) is from rdebath's [Brainfuck](https://github.com/rdebath/Brainfuck) repository.
+
 ## Authors
 
 * **Ryan Kluzinski** - *Initial work* - [rkluzinski](https://github.com/rkluzinski)
