@@ -1,9 +1,9 @@
-CXX = gcc
-C_FLAGS = -march=native -O1
+CXX = g++
+C_FLAGS = -march=native -O2
 
 EXE = brainfast
 
-all: main.c
+all: main.cpp
 	$(CXX) $^ $(C_FLAGS) -o $(EXE)
 
 test:

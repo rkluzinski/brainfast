@@ -1,6 +1,6 @@
-# Brainfast
+# brainfast
 
-A JIT optimizing brainfuck interpreter. Brainfuck code will be compiled into bytecode in memory, which will allow for more efficient instructions. This bytecode will then be ran by the interpreter.
+Run brainfuck at breakneck speeds using dynamic recompilation.
 
 ## Getting Started
 
@@ -8,7 +8,7 @@ How to use brainfast.
 
 ### Prerequisites
 
-Any C compiler.
+Any C++ compiler and GNU make.
 
 ### Installing
 
@@ -21,8 +21,8 @@ $ git clone https://github.com/rkluzinski/brainfast
 Edit the variables in the Makefile
 
 ```
-CXX = gcc
-C_FLAGS = -march=native -O1
+CXX = g++
+C_FLAGS = -march=native -O2
 ```
 
 Run make to compile the program.
