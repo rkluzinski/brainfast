@@ -5,9 +5,31 @@
 
 using namespace std;
 
+enum Opcode {
+  ADD_PTR,
+  SUB_PTR,
+  ADD,
+  SUB,
+  OUT,
+  IN,
+  JMP_ZERO,
+  JMP_NZERO
+};
+
+struct BFOp {
+  Opcode opcode;
+  size_t argument;
+
+  BFOp(Opcode opcode_param, size_t arg_param) {
+    opcode = opcode_param;
+    argument = arg_param;
+  }
+};
+
 //structure to hold the parsed brainfuck program
 struct BFProgram {
-  string instructions;
+  vector<BFOp> instructions;
+  size_t length;
 };
 
 //parses the brainfuck progra from a file
@@ -21,15 +43,36 @@ BFProgram parse_file(string filename) {
   while (infile >> byte) {
     switch (byte) {
     case '>':
+      program.instructions.push_back(BFOp(ADD_PTR, 1));
+      break;
+      
     case '<':
+      program.instructions.push_back(BFOp(SUB_PTR, 1));
+      break;
+      
     case '+':
+      program.instructions.push_back(BFOp(ADD, 1));
+      break;
+      
     case '-':
+      program.instructions.push_back(BFOp(SUB, 1));
+      break;
+      
     case '.':
+      program.instructions.push_back(BFOp(OUT, 0));
+      break;
+      
     case ',':
+      program.instructions.push_back(BFOp(IN, 0));
+      break;
+      
     case '[':
+      program.instructions.push_back(BFOp(JMP_ZERO, 0));
+      break;
+      
     case ']':
-      //add valid instructions to program
-      program.instructions.push_back(byte);
+      program.instructions.push_back(BFOp(JMP_NZERO, 0));
+      break;
       
     default: //remove all other characters
       break;
@@ -38,83 +81,85 @@ BFProgram parse_file(string filename) {
   
   infile.close();
   
+  program.length = program.instructions.size();
+  
   return program;
 }
 
 //computes the jumptable for a brainfuck program
-vector<size_t> compute_jumptable(const BFProgram &program) {
-  size_t pc = 0;
-  size_t length = program.instructions.size();
-
+void compute_jumps(BFProgram &program) {
   vector<size_t> stack;
-  vector<size_t> jumptable = vector<size_t>(length);
 
-  for (auto op: program.instructions) {
-    switch (program.instructions[pc]) {
-    case '[':
+  for (size_t pc = 0; pc < program.length; pc++) {
+    switch (program.instructions[pc].opcode) {
+    case JMP_ZERO:
       stack.push_back(pc);
       break;
       
-    case ']':
-      jumptable[stack.back()] = pc;
-      jumptable[pc] = stack.back();
+    case JMP_NZERO:
+      if (stack.size() == 0) {
+	cout << "Missing '['" << endl;
+	exit(0);
+      }
+    
+      program.instructions[pc].argument = stack.back();
+      program.instructions[stack.back()].argument = pc;
       stack.pop_back();
       break;
       
     default:
       break;
     }
-
-    pc++;
   }
 
-  return jumptable;
+  if (stack.size() != 0) {
+    cout << "Missing ']'" << endl;
+    exit(0);
+  }
+			     
 }
 
 //interprets a brainfuck program
 void interpret_bf(const BFProgram &program) {
   size_t pc = 0;
-  size_t length = program.instructions.size();
-
-  vector<size_t> jumptable = compute_jumptable(program);
 
   unsigned char memory[0x7fff] = {0};
   unsigned char *pointer = memory;
 
-  while (pc < length) {
-    switch (program.instructions[pc]) {
-    case '>': //increment data pointer
-      ++pointer;
+  while (pc < program.instructions.size()) {
+    switch (program.instructions[pc].opcode) {
+    case ADD_PTR: //increment data pointer
+      pointer += program.instructions[pc].argument;
       break;
       
-    case '<': //decrement data pointer
-      --pointer;
+    case SUB_PTR: //decrement data pointer
+      pointer -= program.instructions[pc].argument;
       break;
       
-    case '+': //increment byte
-      ++*pointer;
+    case ADD: //increment byte
+      *pointer += program.instructions[pc].argument;
       break;
       
-    case '-': //decrement byte
-      --*pointer;
+    case SUB: //decrement byte
+      *pointer -= program.instructions[pc].argument;
       break;
       
-    case '.': //output byte
+    case OUT: //output byte
       cout << (char) *pointer;
       break;
       
-    case ',': //store one byte
+    case IN: //store one byte
       cin >> *pointer;
       break;
       
-    case '[': //if byte is zero, jump to matching ']'
+    case JMP_ZERO: //if byte is zero, jump to matching ']'
       if (*pointer == 0)
-	pc = jumptable[pc];
+	pc = program.instructions[pc].argument;
       break;
       
-    case ']': //if byte is nonzero, jump back to matching '['
+    case JMP_NZERO: //if byte is nonzero, jump back to matching '['
       if (*pointer)
-	pc = jumptable[pc];
+	pc = program.instructions[pc].argument;
       break;
       
     default: //all other characters ignored
@@ -132,6 +177,8 @@ int main(int argc, char **argv) {
   }
 
   BFProgram program = parse_file(argv[1]);
+  compute_jumps(program);
   interpret_bf(program);
+  
   return 0;
 }

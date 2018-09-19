@@ -1,5 +1,5 @@
 CXX = g++
-C_FLAGS = -march=native -O2
+C_FLAGS = -g -Wall -march=native -Og
 
 EXE = brainfast
 
