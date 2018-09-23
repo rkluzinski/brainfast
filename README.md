@@ -55,4 +55,6 @@ TODO: add MIT license.
 
 * http://www.hevanet.com/cristofd/brainfuck/
 * https://github.com/rdebath/Brainfuck
+* https://eli.thegreenplace.net/
+* https://defuse.ca/online-x86-assembler.htm
 
