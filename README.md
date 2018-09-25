@@ -8,9 +8,11 @@ How to use brainfast.
 
 ### Prerequisites
 
-Any C++ compiler and GNU make.
+Any C++ compiler, GNU make, and [AsmJit](https://github.com.asmjit/asmjit).
 
 ### Installing
+
+Build the AsmJit shared library following their [instructions](https://github.com/asmjit/asmjit#configuring--building).
 
 Clone the brainfast github repository.
 
@@ -18,11 +20,16 @@ Clone the brainfast github repository.
 $ git clone https://github.com/rkluzinski/brainfast
 ```
 
-Edit the variables in the Makefile
+Edit the variables in the Makefile.
 
 ```
 CXX = g++
-C_FLAGS = -march=native -O2
+
+ASMJIT_INCLUDE = -I ~/asmjit/src/
+ASMJIT_LIB = -L ~/asmjit/
+
+CXX_FLAGS = $(ASMJIT_INCLUDE) -march=native -O2  -c
+LD_FLAGS = $(ASMJIT_LIB) -lasmjit
 ```
 
 Run make to compile the program.
