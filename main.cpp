@@ -1,75 +1,41 @@
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <vector>
 #include <asmjit/asmjit.h>
+
+#include "parser.h"
 
 using namespace std;
 using namespace asmjit;
 
-//32768 8-bit cells
-uint8_t memory[0x7FFF] = {0};
+struct Loop {
+  asmjit::Label start;
+  asmjit::Label end;
 
-//parses brainfuck code and removes all the non-code chars
-string parse_file(string filename) {
-  ifstream infile;
-  infile.open(filename, ios::in);
+  Loop(asmjit::Label start, asmjit::Label end);
+};
 
-  string instructions;
+Loop::Loop(asmjit::Label _start, asmjit::Label _end) : start(_start), end(_end) {}
 
-  char temp;
-  while (infile >> temp) {
-    switch (temp) {
-    case '>': case '<': case '+': case '-':
-    case '.': case ',': case '[': case ']':
-      instructions.push_back(temp);
-      
-    default: //remove all other characters
-      break;
-    }
-  }
-  
-  infile.close();
-  return instructions;
-}
-
-int count_sequential(string s, char c, int i) {
-  int count = 0;
-  while (s[i++] == c) {
-    count++;
-  }
-  return count;
-}
-
-//compiles the brainfuck program to x64 assembly code
-void compile_to_x64(string instructions, X86Assembler &assembler) {
-
-  vector<Label> stack;
+void compile(Parser &parser, X86Assembler &assembler, uint8_t *memory) {
+  std::vector<Loop> loop_stack;
   assembler.mov(x86::r8, (intptr_t) memory);
 
-  for (size_t i = 0; i < instructions.size(); i++) {
-    auto instruction = instructions[i];
-    int count = count_sequential(instructions, instruction, i);
-    
-    switch (instruction) {
+  while (parser.hasNext()) {
+    switch (parser.next()) {
     case '>':
-      assembler.add(x86::r8, count);
-      i += count - 1;
+      assembler.add(x86::r8, 1);
       break;
       
     case '<':
-      assembler.sub(x86::r8, count);
-      i += count - 1;
+      assembler.sub(x86::r8, 1);
       break;
       
     case '+':
-      assembler.add(x86::byte_ptr(x86::r8), count & 0xff);
-      i += count - 1;
+      assembler.add(x86::byte_ptr(x86::r8), 1);
       break;
       
     case '-':
-      assembler.sub(x86::byte_ptr(x86::r8), count & 0xff);
-      i += count - 1;
+      assembler.sub(x86::byte_ptr(x86::r8), 1);
       break;
       
     case '.':
@@ -89,40 +55,39 @@ void compile_to_x64(string instructions, X86Assembler &assembler) {
       break;
       
     case '[': {
-      Label open = assembler.newLabel();
-      Label close = assembler.newLabel();
+      Loop loop(assembler.newLabel(), assembler.newLabel());
 
       assembler.cmp(x86::byte_ptr(x86::r8), 0);
-      assembler.je(close);
-      assembler.bind(open);
+      assembler.je(loop.end);
+      assembler.bind(loop.start);
 
-      stack.push_back(close);
-      stack.push_back(open);
+      loop_stack.push_back(loop);
     }
       break;
       
-    case ']':
-      if (stack.empty()) {
+    case ']': {
+      if (loop_stack.empty()) {
 	cout << "Mismatched '['" << endl;
 	exit(0);
       }
+
+      Loop loop = loop_stack.back();
+      loop_stack.pop_back();
 	  
       assembler.cmp(x86::byte_ptr(x86::r8), 0);
-      assembler.jne(stack.back());
-      stack.pop_back();
-
-      assembler.bind(stack.back());
-      stack.pop_back();
+      assembler.jne(loop.start);
+      assembler.bind(loop.end);
+    }
       break;
       
     default: //throws error on non-instruction char
-      cout << "Illegal Instruction: " << instruction << endl;
+      cout << "Illegal Instruction!" << endl;
       exit(0);
       break;
     }
   }
 
-  if (!stack.empty()) {
+  if (!loop_stack.empty()) {
     cout << "Mismatched ']'" << endl;
     exit(0);
   }
@@ -136,6 +101,8 @@ int main(int argc, char **argv) {
     return 0;
   }
 
+  uint8_t memory[0x7fff];
+
   JitRuntime runtime;
 
   CodeHolder code;
@@ -143,8 +110,8 @@ int main(int argc, char **argv) {
 
   X86Assembler assembler(&code);
 
-  string instructions = parse_file(argv[1]);
-  compile_to_x64(instructions, assembler);
+  Parser parser(argv[1]);
+  compile(parser, assembler, memory);
 
   void (*fn)(void);
   Error error = runtime.add(&fn, &code);
