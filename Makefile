@@ -1,6 +1,6 @@
 CXX = g++
 
-ASMJIT_DIR = /home/ryan-desktop/asmjit
+ASMJIT_DIR = ~/asmjit
 ASMJIT_INCLUDE = -I $(ASMJIT_DIR)/src/
 ASMJIT_LIB = -L $(ASMJIT_DIR)
 
@@ -9,29 +9,34 @@ LD_FLAGS = $(ASMJIT_LIB) -lasmjit -g
 
 EXE = brainfast
 
-all: $(EXE) brainfast_env
+all: $(EXE)
 
-$(EXE): main.o parser.o compiler.o
+$(EXE): main.o parser.o intermediate.o optimizer.o emitter.o
 	$(CXX) $^ $(LD_FLAGS) -o $(EXE)
 
-main.o: main.cpp parser.h compiler.h
+main.o: main.cpp
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
-parser.o: parser.cpp parser.h
+parser.o: parser.cpp
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
-compiler.o: compiler.cpp compiler.h
+intermediate.o: intermediate.cpp
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
-brainfast_env:
-	@echo "export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH::$(ASMJIT_DIR)" > brainfast_env.sh
-	@chmod u+x brainfast_env.sh
+optimizer.o: optimizer.cpp
+	$(CXX) $< $(CXX_FLAGS) -o $@
+
+emitter.o: emitter.cpp
+	$(CXX) $< $(CXX_FLAGS) -o $@
+
+env:
+	@echo "export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH::$(ASMJIT_DIR)" >> env.sh
+	@chmod u+x env.sh
 
 test:
-	@echo "Running torture test. Should output 'Hello World!' followed by the cell size."
 	@./$(EXE) bitwidth.b
 
 clean:
-	@rm -rf brainfast_env.sh
+	@rm -rf env.sh
 	@rm -rf *.o
 	@rm -rf $(EXE)

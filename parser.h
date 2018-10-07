@@ -1,20 +1,10 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef BRAINFAST_PARSER_H
+#define BRAINFAST_PARSER_H
 
-#include <fstream>
 #include <string>
+#include <fstream>
 
-class Parser {
- public://private:
-  size_t index;
-  std::string instructions;
-  
- public:
-  Parser(const char* filename);
-
-  bool hasNext();
-  char next();
-  char peek();
-};
+//parses the file and returns a string of all the instructions
+std::string parse_file(std::string filename);
 
 #endif

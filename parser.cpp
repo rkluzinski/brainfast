@@ -1,42 +1,23 @@
 #include "parser.h"
-#include <iostream>
 
-using namespace std;
+//parses the file and returns a string of all the instructions
+std::string parse_file(std::string filename) {
+  std::ifstream infile(filename, std::ios::in);
 
-/*
- * Constructor
- * reads source file and stores tokens in buffer
- * set index to 0 (the start)
- */
-Parser::Parser(const char* filename) {
-  index = 0;
-  instructions = "";
-  
-  ifstream infile = ifstream(filename, ios::in);
+  std::string instructions;
+  char instruction;
 
-  char token;
-  while (infile >> token) {
-    switch (token) {
+  while(infile >> instruction) {
+    switch (instruction) {
     case '>': case '<': case '+': case '-':
     case '.': case ',': case '[': case ']':
-      instructions.push_back(token);
+      instructions.push_back(instruction);
+      break;
+      
+    default:
+      break;
     }
   }
-  
-  infile.close();
-}
 
-//returns true if there are more tokens to parse
-bool Parser::hasNext() {
-  return index != instructions.size();
-}
-
-//returns the next token
-char Parser::next() {
-  return instructions[index++];
-}
-
-//returns the next token without consuming it
-char Parser::peek() {
-  return instructions[index];
+  return instructions;
 }
