@@ -11,7 +11,7 @@ EXE = brainfast
 
 all: $(EXE)
 
-$(EXE): main.o parser.o intermediate.o optimizer.o emitter.o
+$(EXE): main.o parser.o intermediate.o optimize.o emitter.o
 	$(CXX) $^ $(LD_FLAGS) -o $(EXE)
 
 main.o: main.cpp
@@ -23,7 +23,7 @@ parser.o: parser.cpp
 intermediate.o: intermediate.cpp
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
-optimizer.o: optimizer.cpp
+optimize.o: optimize.cpp
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
 emitter.o: emitter.cpp

@@ -4,6 +4,7 @@
 
 #include "parser.h"
 #include "intermediate.h"
+#include "optimize.h"
 #include "emitter.h"
 
 using namespace std;
@@ -24,11 +25,15 @@ int main(int argc, char **argv) {
 
   X86Assembler assembler(&code);
 
+  //parse the source file
   string instructions = parse_file(argv[1]);
   std::list<Token> tokens = compile(instructions);
 
-  //optimize
+  //apply optimizations
+  combine_arithmetic(tokens);
+  postpone_movements(tokens);
 
+  //assemble the file
   try {
     assemble(assembler, tokens, memory);
   }
