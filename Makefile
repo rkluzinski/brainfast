@@ -11,22 +11,19 @@ EXE = brainfast
 
 all: $(EXE)
 
-$(EXE): main.o parser.o intermediate.o optimize.o emitter.o
+$(EXE): main.o compiler.o optimize.o assembler.o
 	$(CXX) $^ $(LD_FLAGS) -o $(EXE)
 
 main.o: main.cpp
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
-parser.o: parser.cpp
-	$(CXX) $< $(CXX_FLAGS) -o $@
-
-intermediate.o: intermediate.cpp
+compiler.o: compiler.cpp
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
 optimize.o: optimize.cpp
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
-emitter.o: emitter.cpp
+assembler.o: assembler.cpp
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
 env:
@@ -34,9 +31,8 @@ env:
 	@chmod u+x env.sh
 
 test:
-	@./$(EXE) bitwidth.b
+	@./$(EXE) tests/bitwidth.b
 
 clean:
-	@rm -rf env.sh
 	@rm -rf *.o
 	@rm -rf $(EXE)

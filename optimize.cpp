@@ -1,5 +1,6 @@
-#include "optimize.h"
+#include "compiler.h"
 
+/*
 //combines sequential adds and subtracts
 void combine_arithmetic(std::list<Token> &tokens) {
 
@@ -8,25 +9,19 @@ void combine_arithmetic(std::list<Token> &tokens) {
   auto i = tokens.begin();
   while (i != tokens.end()) {
     switch (i->operation) {
-    case Token::ADD:
+    case Token::ADD_B:
       sum += i->argument;
       tokens.erase(i++);
       break;
       
-    case Token::SUB:
+    case Token::SUB_B:
       sum -= i->argument;
       tokens.erase(i++);
       break;
 
     default:
       if (sum != 0) {
-	Token t = Token(Token::ADD, sum);
-
-	if (sum < 0) {
-	  t.operation = Token::SUB;
-	  t.argument = -sum;
-	}
-	
+	Token t = Token(Token::ADD_B, sum);
 	tokens.insert(i, t);
 	sum = 0;
       }
@@ -43,31 +38,25 @@ void postpone_movements(std::list<Token> &tokens) {
   auto i = tokens.begin();
   while (i != tokens.end()) {
     switch (i->operation) {
-    case Token::ADD_PTR:
+    case Token::ADD:
       virtual_ptr += i->argument;
       tokens.erase(i++);
       break;
       
-    case Token::SUB_PTR:
+    case Token::SUB:
       virtual_ptr -= i->argument;
       tokens.erase(i++);
       break;
 
-    case Token::ADD:
-    case Token::SUB:
+    case Token::ADD_B:
+    case Token::SUB_B:
       i->offset = virtual_ptr;
       i++;
       break;
 
     default:
       if (virtual_ptr != 0) {
-	Token t = Token(Token::ADD_PTR, virtual_ptr);
-
-	if (virtual_ptr < 0) {
-	  t.operation = Token::SUB_PTR;
-	  t.argument = -virtual_ptr;
-	}
-	
+	Token t = Token(Token::ADD, virtual_ptr);
 	tokens.insert(i, t);
 	virtual_ptr = 0;
       }
@@ -76,3 +65,4 @@ void postpone_movements(std::list<Token> &tokens) {
     }
   }
 }
+*/
