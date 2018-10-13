@@ -41,8 +41,6 @@ void BFCompiler::assemble(X86Assembler &assembler) {
       assembler.mov(x86::rsi, x86::r8);
       assembler.mov(x86::rdx, 1);
       assembler.syscall();
-      //assembler.movzx(x86::rdi, x86::byte_ptr(x86::r8));
-      //assembler.call(imm_ptr(putchar));
       break;
       
     case BFInst::IN:
@@ -65,10 +63,6 @@ void BFCompiler::assemble(X86Assembler &assembler) {
       break;
       
     case BFInst::JMPNZ: {
-      if (loop_stack.empty())
-	exit(0);
-      //throw MissingBracketException("Missing '['");
-
       Loop loop = loop_stack.back();
       loop_stack.pop_back();
 	  
@@ -79,15 +73,11 @@ void BFCompiler::assemble(X86Assembler &assembler) {
       break;
       
     default:
-      exit(0);
+      exit(1);
       //throw UnimplementedOperationException();
       break;
     }
   }
-
-  if (!loop_stack.empty())
-    exit(0);
-    //throw MissingBracketException("Missing ']'");
 
   assembler.ret();
 }

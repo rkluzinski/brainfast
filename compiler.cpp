@@ -18,6 +18,7 @@ BFCompiler::~BFCompiler() {
 //parses the file and returns a string of all the instructions
 void BFCompiler::parse(const char* filename) {
   std::ifstream infile(filename, std::ios::in);
+  int bracket_counter = 0;
   char instruction;
 
   while(infile >> instruction) {
@@ -28,9 +29,25 @@ void BFCompiler::parse(const char* filename) {
     case '-': instructions.push_back(BFInst(BFInst::SUBB, 1)); break;
     case '.': instructions.push_back(BFInst(BFInst::OUT));     break;
     case ',': instructions.push_back(BFInst(BFInst::IN));      break;
-    case '[': instructions.push_back(BFInst(BFInst::JMPZ));    break;
-    case ']': instructions.push_back(BFInst(BFInst::JMPNZ));   break;
+      
+    case '[':
+      instructions.push_back(BFInst(BFInst::JMPZ));
+      bracket_counter++;
+      break;
+      
+    case ']':
+      instructions.push_back(BFInst(BFInst::JMPNZ));
+      bracket_counter--;
+      if (bracket_counter < 0)
+	//throw exception
+	exit(1);
+      break;
+      
     default: break;
     }
   }
+
+  if (bracket_counter)
+    //throw exception
+    exit(1);
 }
