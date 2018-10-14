@@ -42,7 +42,7 @@ class BFCompiler {
   void parse(const char* filename);
 
   //implemented in optimze.cpp
-  
+  void combine_arithmetic();
 
   //implemented in assembler.cpp
   void assemble(asmjit::X86Assembler &assembler);
