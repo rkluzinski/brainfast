@@ -19,8 +19,8 @@ struct BFInst {
     MOV,
     FMA,
   } operation;
-  int argument;
-  int offset;
+  uint8_t argument;
+  uint64_t offset;
 
   //implemented in compiler.cpp
   BFInst(Operation op);
@@ -43,6 +43,8 @@ class BFCompiler {
 
   //implemented in optimze.cpp
   void combine_arithmetic();
+  void clear_loops();
+  void postpone_movements();
 
   //implemented in assembler.cpp
   void assemble(asmjit::X86Assembler &assembler);

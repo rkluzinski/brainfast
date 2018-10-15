@@ -11,6 +11,14 @@ struct Loop {
   Loop(Label _start, Label _end) : start(_start), end(_end) {}
 };
 
+void _putchar(uint8_t c) {
+  putchar(c);
+}
+
+char _getchar() {
+  return getchar();
+}
+
 //assembles the intermediate code into native assembly
 void BFCompiler::assemble(X86Assembler &assembler) {
 
@@ -38,15 +46,19 @@ void BFCompiler::assemble(X86Assembler &assembler) {
     case BFInst::OUT:
       assembler.mov(x86::rax, 1);
       assembler.mov(x86::rdi, 1);
-      assembler.mov(x86::rsi, x86::r8);
+      assembler.lea(x86::rsi, x86::byte_ptr(x86::r8, t.offset));
       assembler.mov(x86::rdx, 1);
       assembler.syscall();
+      /*
+      assembler.movzx(x86::rdi, x86::byte_ptr(x86::r8));
+      assembler.call(imm_ptr(_putchar));
+      */
       break;
       
     case BFInst::IN:
       assembler.mov(x86::rax, 0);
       assembler.mov(x86::rdi, 0);
-      assembler.mov(x86::rsi, x86::r8);
+      assembler.lea(x86::rsi, x86::byte_ptr(x86::r8, t.offset));
       assembler.mov(x86::rdx, 1);
       assembler.syscall();
       break;

@@ -1,28 +1,26 @@
 #include "compiler.h"
 
-/*
 //combines sequential adds and subtracts
-void combine_arithmetic(std::list<Token> &tokens) {
-
-  int sum = 0;
+void BFCompiler::combine_arithmetic() {
+  uint8_t sum = 0;
+  auto i = instructions.begin();
   
-  auto i = tokens.begin();
-  while (i != tokens.end()) {
+  while (i != instructions.end()) {
     switch (i->operation) {
-    case Token::ADD_B:
+    case BFInst::ADDB:
       sum += i->argument;
-      tokens.erase(i++);
+      instructions.erase(i++);
       break;
       
-    case Token::SUB_B:
+    case BFInst::SUBB:
       sum -= i->argument;
-      tokens.erase(i++);
+      instructions.erase(i++);
       break;
 
     default:
       if (sum != 0) {
-	Token t = Token(Token::ADD_B, sum);
-	tokens.insert(i, t);
+	BFInst inst = BFInst(BFInst::ADDB, sum);
+	instructions.insert(i, inst);
 	sum = 0;
       }
       i++;
@@ -31,33 +29,49 @@ void combine_arithmetic(std::list<Token> &tokens) {
   }
 }
 
-//postpones pointer movements until they are necesary
-void postpone_movements(std::list<Token> &tokens) {
-  int virtual_ptr = 0;
+void BFCompiler::clear_loops() {
+  auto i = instructions.begin();
+  while (i != instructions.end()) {
+    i++;
+  }
+}
 
-  auto i = tokens.begin();
-  while (i != tokens.end()) {
+//postpones pointer movements until they are necesary
+void BFCompiler::postpone_movements() {
+  int virtual_ptr = 0;
+  auto i = instructions.begin();
+ 
+  while (i != instructions.end()) {
     switch (i->operation) {
-    case Token::ADD:
+    case BFInst::ADD:
       virtual_ptr += i->argument;
-      tokens.erase(i++);
+      instructions.erase(i++);
       break;
       
-    case Token::SUB:
+    case BFInst::SUB:
       virtual_ptr -= i->argument;
-      tokens.erase(i++);
+      instructions.erase(i++);
       break;
 
-    case Token::ADD_B:
-    case Token::SUB_B:
+    case BFInst::ADDB:
+    case BFInst::SUBB:
+    case BFInst::OUT:
+    case BFInst::IN:
+    case BFInst::MOV:
       i->offset = virtual_ptr;
       i++;
       break;
 
     default:
       if (virtual_ptr != 0) {
-	Token t = Token(Token::ADD, virtual_ptr);
-	tokens.insert(i, t);
+	BFInst inst = BFInst(BFInst::ADD, virtual_ptr);
+
+	if (virtual_ptr < 0) {
+	  inst.operation = BFInst::SUB;
+	  inst.argument = -virtual_ptr;
+	}
+	
+	instructions.insert(i, inst);
 	virtual_ptr = 0;
       }
       i++;
@@ -65,4 +79,4 @@ void postpone_movements(std::list<Token> &tokens) {
     }
   }
 }
-*/
+
