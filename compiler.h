@@ -42,8 +42,10 @@ class BFCompiler {
   void parse(const char* filename);
 
   //implemented in optimze.cpp
-  void combine_arithmetic();
+  void merge_addb_subb();
   void clear_loops();
+
+  int recursive_postpone(std::list<BFInst>::iterator &i, int displacement);
   void postpone_movements();
 
   //implemented in assembler.cpp

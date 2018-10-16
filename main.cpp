@@ -22,8 +22,10 @@ int main(int argc, char **argv) {
 
   BFCompiler compiler;
   compiler.parse(argv[1]);
-  compiler.combine_arithmetic();
+
+  compiler.merge_addb_subb();
   compiler.postpone_movements();
+  
   compiler.assemble(assembler);
 
   void (*fn)(void);

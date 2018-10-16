@@ -1,30 +1,25 @@
 #include "compiler.h"
 
 //combines sequential adds and subtracts
-void BFCompiler::combine_arithmetic() {
-  uint8_t sum = 0;
+void BFCompiler::merge_addb_subb() {
+  BFInst inst(BFInst::ADDB);
   auto i = instructions.begin();
   
   while (i != instructions.end()) {
-    switch (i->operation) {
-    case BFInst::ADDB:
-      sum += i->argument;
+    if (i->operation == BFInst::ADDB) {
+      inst.argument += i->argument;
       instructions.erase(i++);
-      break;
-      
-    case BFInst::SUBB:
-      sum -= i->argument;
+    }
+    else if (i->operation == BFInst::SUBB) {
+      inst.argument -= i->argument;
       instructions.erase(i++);
-      break;
-
-    default:
-      if (sum != 0) {
-	BFInst inst = BFInst(BFInst::ADDB, sum);
-	instructions.insert(i, inst);
-	sum = 0;
-      }
+    }
+    else if (inst.argument != 0) {
+      instructions.insert(i++, inst);
+      inst.argument = 0;
+    }
+    else {
       i++;
-      break;
     }
   }
 }
@@ -36,47 +31,50 @@ void BFCompiler::clear_loops() {
   }
 }
 
-//postpones pointer movements until they are necesary
-void BFCompiler::postpone_movements() {
-  int virtual_ptr = 0;
-  auto i = instructions.begin();
- 
+BFInst pointer_op(int displacement) {
+  if (displacement > 0)
+    return BFInst(BFInst::ADD, displacement);
+  else
+    return BFInst(BFInst::SUB, -displacement);
+}
+
+int BFCompiler::recursive_postpone(std::list<BFInst>::iterator &i, int displacement) {
+  int loop_pointer = 0;
+  
   while (i != instructions.end()) {
-    switch (i->operation) {
-    case BFInst::ADD:
-      virtual_ptr += i->argument;
+    if (i->operation == BFInst::ADD) {
+      displacement += i->argument;
+      loop_pointer += i->argument;
       instructions.erase(i++);
-      break;
-      
-    case BFInst::SUB:
-      virtual_ptr -= i->argument;
+    }
+    else if (i->operation == BFInst::SUB) {
+      displacement -= i->argument;
+      loop_pointer -= i->argument;
       instructions.erase(i++);
-      break;
-
-    case BFInst::ADDB:
-    case BFInst::SUBB:
-    case BFInst::OUT:
-    case BFInst::IN:
-    case BFInst::MOV:
-      i->offset = virtual_ptr;
+    }
+    else if (i->operation == BFInst::JMPZ) {
+      (i++)->offset = displacement;
+      displacement = recursive_postpone(i, displacement);
+    }
+    else if (i->operation == BFInst::JMPNZ) {
+      displacement -= loop_pointer;
+      i->offset = displacement;
+      if (loop_pointer != 0)
+	instructions.insert(i, pointer_op(loop_pointer));
       i++;
-      break;
-
-    default:
-      if (virtual_ptr != 0) {
-	BFInst inst = BFInst(BFInst::ADD, virtual_ptr);
-
-	if (virtual_ptr < 0) {
-	  inst.operation = BFInst::SUB;
-	  inst.argument = -virtual_ptr;
-	}
-	
-	instructions.insert(i, inst);
-	virtual_ptr = 0;
-      }
-      i++;
-      break;
+      return displacement;
+    }
+    else {
+      (i++)->offset = displacement;
     }
   }
+
+  return 0;
+}
+
+//postpones pointer movements until they are necesary
+void BFCompiler::postpone_movements() {
+  auto i = instructions.begin();
+  recursive_postpone(i, 0);
 }
 

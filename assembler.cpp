@@ -66,7 +66,7 @@ void BFCompiler::assemble(X86Assembler &assembler) {
     case BFInst::JMPZ: {
       Loop loop(assembler.newLabel(), assembler.newLabel());
 
-      assembler.cmp(x86::byte_ptr(x86::r8), 0);
+      assembler.cmp(x86::byte_ptr(x86::r8, t.offset), 0);
       assembler.je(loop.end);
       assembler.bind(loop.start);
 
@@ -78,7 +78,7 @@ void BFCompiler::assemble(X86Assembler &assembler) {
       Loop loop = loop_stack.back();
       loop_stack.pop_back();
 	  
-      assembler.cmp(x86::byte_ptr(x86::r8), 0);
+      assembler.cmp(x86::byte_ptr(x86::r8, t.offset), 0);
       assembler.jne(loop.start);
       assembler.bind(loop.end);
     }
