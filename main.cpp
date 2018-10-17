@@ -21,10 +21,10 @@ int main(int argc, char **argv) {
   X86Assembler assembler(&code);
 
   BFCompiler compiler;
-  compiler.parse(argv[1]);
+  compiler.compile(argv[1]);
 
-  compiler.merge_addb_subb();
-  compiler.postpone_movements();
+  //compiler.merge_addb_subb();
+  //compiler.postpone_movements();
   
   compiler.assemble(assembler);
 

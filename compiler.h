@@ -1,6 +1,7 @@
 #ifndef BRAINFAST_COMPILER_H
 #define BRAINFAST_COMPILER_H
 
+#include <string>
 #include <list>
 #include <asmjit/asmjit.h>
 
@@ -39,7 +40,7 @@ class BFCompiler {
 
   //implemented in compiler.cpp
   //converts source file to intermediate instructions
-  void parse(const char* filename);
+  void compile(const char* filename);
 
   //implemented in optimze.cpp
   void merge_addb_subb();
