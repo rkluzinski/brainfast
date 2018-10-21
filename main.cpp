@@ -1,5 +1,4 @@
 #include <iostream>
-#include <list>
 #include <asmjit/asmjit.h>
 
 #include "compiler.h"
@@ -20,13 +19,8 @@ int main(int argc, char **argv) {
 
   X86Assembler assembler(&code);
 
-  BFCompiler compiler;
+  BFCompilerX86 compiler(&assembler);
   compiler.compile(argv[1]);
-
-  //compiler.merge_addb_subb();
-  //compiler.postpone_movements();
-  
-  compiler.assemble(assembler);
 
   void (*fn)(void);
   Error error = runtime.add(&fn, &code);

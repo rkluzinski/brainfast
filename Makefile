@@ -11,19 +11,16 @@ EXE = brainfast
 
 all: $(EXE)
 
-$(EXE): main.o compiler.o optimize.o assembler.o
+$(EXE): main.o parser.o compiler.o
 	$(CXX) $^ $(LD_FLAGS) -o $(EXE)
 
 main.o: main.cpp compiler.h
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
+parser.o: parser.cpp parser.h
+	$(CXX) $< $(CXX_FLAGS) -o $@
+
 compiler.o: compiler.cpp compiler.h
-	$(CXX) $< $(CXX_FLAGS) -o $@
-
-optimize.o: optimize.cpp compiler.h
-	$(CXX) $< $(CXX_FLAGS) -o $@
-
-assembler.o: assembler.cpp compiler.h
 	$(CXX) $< $(CXX_FLAGS) -o $@
 
 env:

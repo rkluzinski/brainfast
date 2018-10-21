@@ -1,129 +1,192 @@
 #include "compiler.h"
-#include <vector>
-#include <fstream>
+#include <stdio.h>
 #include <stdlib.h>
 
-//intermediate representation token constructors
-BFInst::BFInst(Operation op) : operation(op), argument(0), offset(0) {}
-BFInst::BFInst(Operation op, int arg) : operation(op), argument(arg), offset(0) {}
-BFInst::BFInst(Operation op, int arg, int off) : operation(op), argument(arg), offset(off) {}
+using namespace asmjit;
 
-BFCompiler::BFCompiler() {
-  memory = (unsigned char*) malloc(0x7fff * sizeof(unsigned char*));
+//loop constructor
+BFCompilerX86::Loop::Loop(asmjit::Label _start, asmjit::Label _end)
+  : start(_start), end(_end) {}
+
+//constructor
+//allocates the programs memory
+BFCompilerX86::BFCompilerX86(X86Assembler *assm) {
+  assembler = assm;
+  memory = (imm_value*) malloc(MEMORY_SIZE * sizeof(imm_value));
+  if (memory == NULL) {
+    //throw an error
+    exit(0);
+  }
 }
 
-BFCompiler::~BFCompiler() {
+BFCompilerX86::~BFCompilerX86() {
   free(memory);
 }
 
-//reads the source file and returns a string of all valid brainfuck instructions
-std::string parse_file(const char *filename) {
-  std::ifstream infile(filename, std::ios::in);
+//compiles the file into x86 assembly
+void BFCompilerX86::compile(const char *filename) {
+  BFParser parser(filename);
 
-  std::string source;
-  char instruction;
-  
-  while (infile >> instruction) {
-    switch (instruction) {
+  addr_offset offset = 0;
+  addr_offset loop_offset = 0;
+  std::vector<addr_offset> offset_stack;
+
+  //assembly header
+  assembler->mov(ptr, (intptr_t) memory);
+
+  while (parser.hasNext()) {
+    switch (parser.peek()) {
     case '>':
+      offset++;
+      loop_offset++;
+      parser.next();
+      break;
+      
     case '<':
+      offset--;
+      loop_offset--;
+      parser.next();
+      break;
+      
     case '+':
-    case '-':
+    case '-':   
+      arithmeticOp(offset, arithmeticSum(parser));
+      break;
+      
     case '.':
+      byteOutOp(offset);
+      parser.next();
+      break;
+      
     case ',':
-    case '[':
-    case ']':
-      source.push_back(instruction);
-      
-    default: break;
-    }
-  }
-
-  return source;
-}
-
-//combines sequential '+' and '-' operaters into a single add instruction
-BFInst createArithmeticInst(std::string source, size_t index, int offset) {
-  uint8_t sum = 0;
-
-  for (;; index++) {
-    if (source[index] == '+')
-      sum += 1;
-    else if (source[index] == '-')
-      sum -= 1;
-    else
+      byteInOp(offset);
+      parser.next();
       break;
-  }
-
-  return BFInst(BFInst::ADDB, sum, offset);
-}
-
-//creates a pointer movement instruction with the given offset
-BFInst createMovementInst(int offset) {
-  if (offset > 0)
-    return BFInst(BFInst::ADD, offset);
-  else
-    return BFInst(BFInst::SUB, -offset);
-}
-
-//parses the file and returns a string of all the instructions
-void BFCompiler::compile(const char* filename) {
-  std::string source = parse_file(filename);
-
-  int offset = 0;
-  int loop_offset = 0;
-  std::vector<int> stack;
-
-  for (size_t i = 0; i < source.size(); i++) {
-    switch (source[i]) {
-    case '>':
-      offset += 1;
-      loop_offset += 1;
-      break;
-      
-    case '<':
-      offset -= 1;
-      loop_offset -= 1;
-      break;
-      
-    case '+':
-    case '-':
-      instructions.push_back(createArithmeticInst(source, i, offset));
-      while (source[i+1] == '+' || source[i+1] == '-')
-	i++;
-      break;
-      
-    case '.': instructions.push_back(BFInst(BFInst::OUT, 0, offset)); break;
-    case ',': instructions.push_back(BFInst(BFInst::IN, 0, offset)); break;
       
     case '[':
-      stack.push_back(loop_offset);
+      if (parser.isClearLoop())
+	break;
+      if (parser.isScanLoop())
+	break;
+      if (parser.isMultiplyLoop())
+	break;
+      
+      offset_stack.push_back(loop_offset);
       loop_offset = 0;
       
-      instructions.push_back(BFInst(BFInst::JMPZ, 0, offset));
+      loopStart(offset);
+      parser.next();
       break;
       
     case ']':
-      if (loop_offset != 0)
-	instructions.push_back(createMovementInst(loop_offset));
-
+      pointerOp(loop_offset);
       offset -= loop_offset;
-
-      if (stack.empty())
-	//throw exception
-	exit(1);
-
-      loop_offset = stack.back();
-      stack.pop_back();
       
-      instructions.push_back(BFInst(BFInst::JMPNZ, 0, offset));
+      loop_offset = offset_stack.back();
+      offset_stack.pop_back();
+      
+      loopEnd(offset);
+      parser.next();
       break;
-      
-    default: break;
+
+    default:
+      //throw error
+      exit(0);
+      break;
     }
   }
 
-  if (!stack.empty())
-    //throw exception
-    exit(1);
+  //assembly footer
+  assembler->ret();
 }
+
+//emits pointer add/sub operation
+void BFCompilerX86::pointerOp(addr_offset offset) {
+  if (offset > 0)
+    assembler->add(ptr, offset);
+  else if (offset < 0)
+    assembler->sub(ptr, -offset);
+}
+
+//emits add/sub immediate operation
+void BFCompilerX86::arithmeticOp(addr_offset offset, imm_value imm) {
+  assembler->add(x86::byte_ptr(ptr, offset), imm);
+}
+
+//emits write byte operation
+void BFCompilerX86::byteOutOp(addr_offset offset) {
+  /*assembler->mov(x86::rax, 1);
+  assembler->mov(x86::rdi, 1);
+  assembler->lea(x86::rsi, x86::byte_ptr(ptr, offset));
+  assembler->mov(x86::rdx, 1);
+  assembler->syscall();*/
+  assembler->movzx(x86::rdi, x86::byte_ptr(ptr, offset));
+  assembler->call(imm_ptr(putchar));
+}
+
+//emits read byte operation
+void BFCompilerX86::byteInOp(addr_offset offset) {
+  /*assembler->mov(x86::rax, 0);
+  assembler->mov(x86::rdi, 0);
+  assembler->lea(x86::rsi, x86::byte_ptr(ptr, offset));
+  assembler->mov(x86::rdx, 1);
+  assembler->syscall();*/
+  assembler->call(imm_ptr(getchar));
+  assembler->mov(x86::byte_ptr(ptr, offset), x86::al);
+}
+
+//emits loop start
+void BFCompilerX86::loopStart(addr_offset offset) {
+  Loop loop(assembler->newLabel(), assembler->newLabel());
+  loop_stack.push_back(loop);
+  
+  assembler->cmp(x86::byte_ptr(ptr, offset), 0);
+  assembler->je(loop.end);
+  assembler->bind(loop.start);
+}
+
+//emits loop end
+void BFCompilerX86::loopEnd(addr_offset offset) {
+  Loop loop = loop_stack.back();
+  loop_stack.pop_back();
+  
+  assembler->cmp(x86::byte_ptr(ptr, offset), 0);
+  assembler->jne(loop.start);
+  assembler->bind(loop.end);
+}
+
+//emits a move immediate operation
+void moveImmOp(addr_offset offset, imm_value imm);
+//emits a multiply accumulate operation
+void mulitpyAccumulateOp(addr_offset src, addr_offset dest, imm_value imm);
+
+//sums sequential arithmetic operations
+imm_value BFCompilerX86::arithmeticSum(BFParser &p) {
+  imm_value sum = 0;
+  char next = p.peek();
+  
+  while (p.hasNext()) {
+    if (next == '+') {
+      sum++;
+      p.next();
+    }
+    else if (next == '-') {
+      sum--;
+      p.next();
+    }
+    else {
+      break;
+    }
+
+    next = p.peek();
+  }
+
+  return sum;
+}
+
+//emits optimized clear loop code
+void clearLoop(addr_offset offset);
+//emits optimized scan loop code
+void scanLoop(addr_offset offset);
+//emits optimized multiply loop code
+void multiplyLoop(addr_offset offset);
