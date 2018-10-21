@@ -156,9 +156,14 @@ void BFCompilerX86::loopEnd(addr_offset offset) {
 }
 
 //emits a move immediate operation
-void moveImmOp(addr_offset offset, imm_value imm);
+void BFCompilerX86::moveImmOp(addr_offset offset, imm_value imm) {
+
+}
+
 //emits a multiply accumulate operation
-void mulitpyAccumulateOp(addr_offset src, addr_offset dest, imm_value imm);
+void BFCompilerX86::mulitpyAccumulateOp(addr_offset src, addr_offset dest, imm_value imm) {
+
+}
 
 //sums sequential arithmetic operations
 imm_value BFCompilerX86::arithmeticSum(BFParser &p) {
@@ -185,8 +190,16 @@ imm_value BFCompilerX86::arithmeticSum(BFParser &p) {
 }
 
 //emits optimized clear loop code
-void clearLoop(addr_offset offset);
+void BFCompilerX86::clearLoop(addr_offset offset) {
+
+}
+
 //emits optimized scan loop code
-void scanLoop(addr_offset offset);
+void BFCompilerX86::scanLoop(addr_offset offset) {
+
+}
+
 //emits optimized multiply loop code
-void multiplyLoop(addr_offset offset);
+void BFCompilerX86::multiplyLoop(addr_offset offset) {
+
+}
