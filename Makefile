@@ -4,7 +4,7 @@ ASMJIT_DIR = ~/asmjit
 ASMJIT_INCLUDE = -I $(ASMJIT_DIR)/src/
 ASMJIT_LIB = -L $(ASMJIT_DIR)
 
-CXX_FLAGS = -Wall -g -Og $(ASMJIT_INCLUDE) -c
+CXX_FLAGS = -Wall -Wextra -g -Og $(ASMJIT_INCLUDE) -c
 LD_FLAGS = $(ASMJIT_LIB) -lasmjit -g
 
 EXE = brainfast

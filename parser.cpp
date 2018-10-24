@@ -53,7 +53,18 @@ void BFParser::consume(int count) {
 
 //check if the next sequence is a clear loop
 bool BFParser::isClearLoop() {
-  return false;
+  if (instructions[index] != '[') {
+    return false;
+  }
+  else if (instructions[index+1] != '+' && instructions[index+1] != '-') {
+    return false;
+  }
+  else if (instructions[index+2] != ']') {
+    return false;
+  }
+  else {
+    return true;
+  }
 }
 
 //check if the next sequence is a scan loop

@@ -61,18 +61,19 @@ void BFCompilerX86::compile(const char *filename) {
       
     case '[':
       if (parser.isClearLoop()) {
-	//clearLoop(offset);
+	clearLoop(offset);
+	parser.consume(3);
       }
-      if (parser.isScanLoop()) {
+      else if (parser.isScanLoop()) {
 	//scanLoop(offset);
       }
-      if (parser.isMultiplyLoop()) {
+      else if (parser.isMultiplyLoop()) {
 	//multiplyLoop(offset);
       }
       else {
 	pointerOp(offset);
 	offset = 0;
-	loopStart(offset);
+	loopStart(0);
 	parser.next();
       }
       break;
@@ -80,7 +81,7 @@ void BFCompilerX86::compile(const char *filename) {
     case ']':
       pointerOp(offset);
       offset = 0;
-      loopEnd(offset);
+      loopEnd(0);
       parser.next();
       break;
 
@@ -127,7 +128,7 @@ void BFCompilerX86::loopStart(addr_offset offset) {
   Loop loop(assembler->newLabel(), assembler->newLabel());
   loopStack.push_back(loop);
   
-  assembler->cmp(x86::byte_ptr(ptr, offset), 0);
+  assembler->cmp(x86::byte_ptr(ptr), 0);
   assembler->je(loop.end);
   assembler->bind(loop.start);
 }
@@ -137,7 +138,7 @@ void BFCompilerX86::loopEnd(addr_offset offset) {
   Loop loop = loopStack.back();
   loopStack.pop_back();
   
-  assembler->cmp(x86::byte_ptr(ptr, offset), 0);
+  assembler->cmp(x86::byte_ptr(ptr), 0);
   assembler->jne(loop.start);
   assembler->bind(loop.end);
 }
@@ -178,7 +179,7 @@ imm_value BFCompilerX86::arithmeticSum(BFParser &p) {
 
 //emits optimized clear loop code
 void BFCompilerX86::clearLoop(addr_offset offset) {
-
+  assembler->mov(x86::byte_ptr(ptr, offset), 0);
 }
 
 //emits optimized scan loop code
