@@ -17,14 +17,14 @@ class BFCompilerX86 {
   asmjit::X86Gp ptr = asmjit::x86::r12;
   asmjit::X86Assembler *assembler;
 
-  //used by the compiler
+  //stores labels for the beginning and ending of a loop
   struct Loop {
     asmjit::Label start;
     asmjit::Label end;
     
     Loop(asmjit::Label _start, asmjit::Label _end);
   };
-  std::vector<Loop> loop_stack;
+  std::vector<Loop> loopStack;
 
   //emits pointer add/sub operation
   void pointerOp(addr_offset offset);
