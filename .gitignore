@@ -1,5 +1,7 @@
 brainfast
-code
+benchmarks/__pycache__
+env.sh
+TODO
 
 *~
 *.o
