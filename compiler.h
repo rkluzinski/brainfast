@@ -5,7 +5,7 @@
 #include <asmjit/asmjit.h>
 #include "parser.h"
 
-#define MEMORY_SIZE 0x7fff
+#define MEMORY_SIZE 0xffff //65536
 
 //types used by the compiler
 typedef int16_t addr_offset;

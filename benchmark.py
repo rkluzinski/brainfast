@@ -1,15 +1,17 @@
 import subprocess
 from time import time
-from resource import getrusage, RUSAGE_SELF, RUSAGE_CHILDREN
+from resource import getrusage, RUSAGE_CHILDREN
 
 
-command = "time ./brainfast benchmarks/{}"
+command = "./brainfast benchmarks/{0}.b < benchmarks/{0}.in > benchmarks/{0}.out"
 
 programs = [
-    #"factor.b",
-    "hanoi.b",
-    "long.b",
-    "mandelbrot.b",
+    "awib-0.4",
+    "dbfi",
+    "factor",
+    "hanoi",
+    "long",
+    "mandelbrot",
     ]
 
 
@@ -19,13 +21,7 @@ def time_process(program, stdin=None):
     start = time()
 
     # run process
-    process = subprocess.Popen(
-        command.format(program),
-        #stdin=b'137',
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True)
-
+    process = subprocess.Popen(command.format(program), shell=True)
     process.wait()
 
     # end time
@@ -41,11 +37,23 @@ def time_process(program, stdin=None):
 
 
 def main():
+    # store the total value
+    total = (0, 0, 0)
+
+    # print the header
     print("{:20s} {:>8s} {:>8s} {:>8s}".format("program", "real", "user", "sys"))
     print("-" * 48)
+
+    # for each program
     for program in programs:
+        
+        # get the real, user, and system time
         real, user, system = time_process(program)
+        total = tuple(map(lambda x,y: x+y, total, (real, user, system)))
         print("{:20s} {:8.3f} {:8.3f} {:8.3f}".format(program, real, user, system))
+
+    # print total
+    print("{:20s} {:8.3f} {:8.3f} {:8.3f}".format("total", *total))
 
 
 if __name__ == "__main__":
