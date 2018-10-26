@@ -21,8 +21,7 @@ def time_process(program, stdin=None):
     start = time()
 
     # run process
-    process = subprocess.Popen(command.format(program), shell=True)
-    process.wait()
+    subprocess.call(command.format(program), shell=True)
 
     # end time
     end = time();

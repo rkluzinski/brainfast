@@ -10,12 +10,14 @@
 //types used by the compiler
 typedef int16_t addr_offset;
 typedef uint8_t imm_value;
+typedef int (*BFProgram)(int);
 
 class BFCompilerX86 {
  private:
-  imm_value *memory;
-  asmjit::X86Gp ptr = asmjit::x86::r12;
+  asmjit::JitRuntime runtime;
   asmjit::X86Assembler *assembler;
+  asmjit::X86Gp ptr = asmjit::x86::r12;
+  asmjit::X86Gp malloc_addr = asmjit::x86::r13;
 
   //stores labels for the beginning and ending of a loop
   struct Loop {
@@ -25,6 +27,11 @@ class BFCompilerX86 {
     Loop(asmjit::Label _start, asmjit::Label _end);
   };
   std::vector<Loop> loopStack;
+
+  //emits brainfuck assembly program header
+  void programHeader();
+  //emits brainfuck assembly program footer
+  void programFooter();
 
   //emits pointer add/sub operation
   void pointerOp(addr_offset offset);
@@ -57,11 +64,11 @@ class BFCompilerX86 {
  public:
   //constructor
   //creates the compiler parser and jit environment
-  BFCompilerX86(asmjit::X86Assembler *assembler);
+  BFCompilerX86();
   ~BFCompilerX86();
 
   //compiles the file into x86 assembly
-  void compile(const char *filename);
+  BFProgram compile(const char *filename);
 };
 
 #endif

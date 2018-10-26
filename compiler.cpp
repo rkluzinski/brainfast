@@ -1,5 +1,6 @@
 #include "compiler.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 using namespace asmjit;
 
@@ -9,38 +10,36 @@ BFCompilerX86::Loop::Loop(asmjit::Label _start, asmjit::Label _end)
 
 //constructor
 //allocates the programs memory
-BFCompilerX86::BFCompilerX86(X86Assembler *assm) {
-  assembler = assm;
-  memory = new imm_value[MEMORY_SIZE];
-  if (memory == NULL) {
-    //throw an error
-    exit(0);
-  }
+BFCompilerX86::BFCompilerX86() {
+  //assembler = assm;
 }
 
 BFCompilerX86::~BFCompilerX86() {
-  delete memory;
+  //release runtime
 }
 
 //compiles the file into x86 assembly
-void BFCompilerX86::compile(const char *filename) {
+BFProgram BFCompilerX86::compile(const char *filename) {
   BFParser parser(filename);
+
+  CodeHolder code;
+  code.init(runtime.getCodeInfo());
+  assembler = new X86Assembler(&code);
+  
   addr_offset offset = 0;
 
   //assembly header
-  assembler->mov(ptr, (intptr_t) memory);
+  programHeader();
 
   while (parser.hasNext()) {
     switch (parser.peek()) {
     case '>':
       offset++;
-      //loopInfo.offset++;
       parser.next();
       break;
       
     case '<':
       offset--;
-      //loopInfo.offset--;
       parser.next();
       break;
       
@@ -92,7 +91,46 @@ void BFCompilerX86::compile(const char *filename) {
     }
   }
 
-  //assembly footer
+  programFooter();
+  delete assembler;
+
+  BFProgram fn;
+  Error error = runtime.add(&fn, &code);
+  if (error)
+    return NULL;
+
+  return fn;
+}
+
+//emits brainfuck assembly program header
+void BFCompilerX86::programHeader() {
+  Label MALLOC_OK = assembler->newLabel();
+  //calls calloc, rdi already holds the size argument
+  assembler->mov(x86::rsi, 0x1);
+  assembler->call(imm_ptr(calloc));
+
+  //check if calloc returned null
+  assembler->cmp(x86::rax, NULL);
+  assembler->jne(MALLOC_OK);
+
+  //if null, return 1
+  assembler->mov(x86::rax, 1);
+  assembler->ret();
+
+  //stores address of the calloc'd memory
+  assembler->bind(MALLOC_OK);
+  assembler->mov(ptr, x86::rax);
+  assembler->mov(malloc_addr, x86::rax);
+}
+
+//emits brainfuck assembly program footer
+void BFCompilerX86::programFooter() {
+  //free allocated memory
+  assembler->mov(x86::rdi, malloc_addr);
+  assembler->call(imm_ptr(free));
+
+  //returns 0
+  assembler->mov(x86::rax, 0);
   assembler->ret();
 }
 
