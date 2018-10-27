@@ -1,18 +1,32 @@
 #include <iostream>
+#include <asmjit/asmjit.h>
 #include "compiler.h"
 
 using namespace std;
+using namespace asmjit;
 
 int main(int argc, char **argv) {
-  if (argc != 2) {
+  if (argc < 2) {
     cout << "usage: ./brainfast filename" << endl;
     return 0;
   }
 
-  BFCompilerX86 compiler;
-  BFProgram fn = compiler.compile(argv[1]);
+  JitRuntime runtime;
 
-  if (fn == NULL) {
+  //FileLogger logger(stdout);
+  
+  CodeHolder code;
+  code.init(runtime.getCodeInfo());
+  //code.setLogger(&logger);
+  
+  X86Assembler assembler(&code);
+
+  BFCompilerX86 compiler(&assembler);
+  compiler.compile(argv[1]);
+
+  BFProgram fn;
+  Error error = runtime.add(&fn, &code);
+  if (error) {
     cout << "asmjit runtime error!" << endl;
     return 0;
   }

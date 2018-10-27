@@ -65,4 +65,5 @@ TODO: add MIT license.
 * https://eli.thegreenplace.net/
 * https://defuse.ca/online-x86-assembler.htm
 * https://github.com/matslina/bfoptimization
+* http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html
 

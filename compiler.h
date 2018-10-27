@@ -14,10 +14,10 @@ typedef int (*BFProgram)(int);
 
 class BFCompilerX86 {
  private:
-  asmjit::JitRuntime runtime;
   asmjit::X86Assembler *assembler;
   asmjit::X86Gp ptr = asmjit::x86::r12;
-  asmjit::X86Gp malloc_addr = asmjit::x86::r13;
+  asmjit::X86Gp mem_start = asmjit::x86::r13;
+  asmjit::X86Gp mem_size = asmjit::x86::r14;
 
   //stores labels for the beginning and ending of a loop
   struct Loop {
@@ -49,7 +49,7 @@ class BFCompilerX86 {
   //emits move immediate operation
   void moveImmOp(addr_offset offset, imm_value imm);
   //emits a multiply accumulate operation
-  void mulitpyAccumulateOp(addr_offset src, addr_offset dest, imm_value imm);
+  void multiplyAccumulate(addr_offset src, addr_offset dest, imm_value imm);
 
   //sums sequential arithmetic operations
   imm_value arithmeticSum(BFParser &p);
@@ -57,18 +57,20 @@ class BFCompilerX86 {
   //emits optimized clear loop code
   void clearLoop(addr_offset offset);
   //emits optimized scan loop code
-  void scanLoop(addr_offset offset);
+  void scanLoop(BFParser &parser, addr_offset offset);
+  //emits optimzied code for scanning left
+  void scanLeft(addr_offset offset);
+  //emits optimized code for scanning right
+  void scanRight(addr_offset offset);
   //emits optimized multiply loop code
-  void multiplyLoop(addr_offset offset);
+  void multiplyLoop(BFParser &parser, addr_offset offset);
 
  public:
   //constructor
-  //creates the compiler parser and jit environment
-  BFCompilerX86();
-  ~BFCompilerX86();
-
+  BFCompilerX86(asmjit::X86Assembler *assm);
+  
   //compiles the file into x86 assembly
-  BFProgram compile(const char *filename);
+  void compile(const char *filename);
 };
 
 #endif

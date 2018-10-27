@@ -69,10 +69,50 @@ bool BFParser::isClearLoop() {
 
 //check if the next sequence is a scan loop
 bool BFParser::isScanLoop() {
-  return false;
+  if (instructions[index] != '[') {
+    return false;
+  }
+  else if (instructions[index+1] != '>' && instructions[index+1] != '<') {
+    return false;
+  }
+  else if (instructions[index+2] != ']') {
+    return false;
+  }
+  else {
+    return true;
+  }
 }
 
 //check if the next sequence is a multiply loop
 bool BFParser::isMultiplyLoop() {
-  return false;
+  int counter_delta = 0;
+  int ptr_delta = 0;
+
+  int i = index;
+  bool done = false;
+  while (!done) {
+    switch(instructions[++i]) {
+    case '>': ptr_delta++; break;
+    case '<': ptr_delta--; break;
+    case '+':
+      if (ptr_delta == 0)
+	counter_delta++;
+      break;
+    case '-':
+      if(ptr_delta == 0)
+	counter_delta--;
+      break;
+      
+    case '.':
+    case ',':
+    case '[':
+      return false;
+      
+    case ']':
+      done = true;
+      break;
+    }
+  }
+
+  return (counter_delta == -1) && (ptr_delta == 0);
 }
