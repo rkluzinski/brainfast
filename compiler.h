@@ -42,9 +42,9 @@ class BFCompilerX86 {
   //emits read byte operation
   void byteInOp(addr_offset offset);
   //emits loop start
-  void loopStart(addr_offset offset);
+  void loopStart();
   //emits loop end
-  void loopEnd(addr_offset offset);
+  void loopEnd();
 
   //emits move immediate operation
   void moveImmOp(addr_offset offset, imm_value imm);

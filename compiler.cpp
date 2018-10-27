@@ -52,7 +52,7 @@ void BFCompilerX86::compile(const char *filename) {
 	parser.consume(3);
       }
       //disabling scanloops
-      else if (false && parser.isScanLoop()) {
+      else if (true && parser.isScanLoop()) {
 	pointerOp(offset);
 	offset = 0;
 	scanLoop(parser, offset);
@@ -63,7 +63,7 @@ void BFCompilerX86::compile(const char *filename) {
       else {
 	pointerOp(offset);
 	offset = 0;
-	loopStart(0);
+	loopStart();
 	parser.next();
       }
       break;
@@ -71,7 +71,7 @@ void BFCompilerX86::compile(const char *filename) {
     case ']':
       pointerOp(offset);
       offset = 0;
-      loopEnd(0);
+      loopEnd();
       parser.next();
       break;
 
@@ -90,7 +90,7 @@ void BFCompilerX86::programHeader() {
   assembler->mov(mem_size, x86::rdi);
   
   //calls calloc, rdi already holds the size argument
-  assembler->mov(x86::rsi, 0x1);
+  assembler->mov(x86::rsi, 1);
   assembler->call(imm_ptr(calloc));
 
   //check if calloc returned null
@@ -146,7 +146,7 @@ void BFCompilerX86::byteInOp(addr_offset offset) {
 }
 
 //emits loop start
-void BFCompilerX86::loopStart(addr_offset offset) {
+void BFCompilerX86::loopStart() {
   Loop loop(assembler->newLabel(), assembler->newLabel());
   loopStack.push_back(loop);
   
@@ -156,7 +156,7 @@ void BFCompilerX86::loopStart(addr_offset offset) {
 }
 
 //emits loop end
-void BFCompilerX86::loopEnd(addr_offset offset) {
+void BFCompilerX86::loopEnd() {
   Loop loop = loopStack.back();
   loopStack.pop_back();
   
@@ -164,12 +164,6 @@ void BFCompilerX86::loopEnd(addr_offset offset) {
   assembler->jne(loop.start);
   assembler->bind(loop.end);
 }
-
-/*
-void mac(void *src, void *dst, imm_value imm) {
-  *src += *dst * imm;
-}
-*/
 
 //emits a multiply accumulate operation
 void BFCompilerX86::multiplyAccumulate(addr_offset src, addr_offset dst, imm_value imm) {
@@ -220,8 +214,13 @@ void BFCompilerX86::scanLoop(BFParser &parser, addr_offset offset) {
 }
 
 //memchr is overloaded and cannot be called directly by asmjit
-void *_memchr(void *p, char v, size_t s) {
-  return memchr(p, v, s);
+void *_memchr(void *ptr, int value, size_t size) {
+  return memchr(ptr, value, size);
+}
+
+//memrchr is overloaded and cannot be called directly by asmjit
+void *_memrchr(void *ptr, int value, size_t size) {
+  return memrchr(ptr, value, size);
 }
 
 //emits optimzied code for scanning left
@@ -232,14 +231,13 @@ void BFCompilerX86::scanLeft(addr_offset offset) {
   assembler->sub(x86::rdx, mem_start);
   assembler->add(x86::rdx, 1);
 
-  assembler->call(imm_ptr(_memchr));
+  assembler->call(imm_ptr(_memrchr));
   assembler->mov(ptr, x86::rax);
 }
 
 //emits optimized code for scanning right
 void BFCompilerX86::scanRight(addr_offset offset) {
-  assembler->mov(x86::rdi, mem_start);
-  assembler->add(x86::rdi, ptr);
+  assembler->mov(x86::rdi, ptr);
   assembler->mov(x86::rsi, 0);
   assembler->mov(x86::rdx, mem_start);
   assembler->add(x86::rdx, mem_size);
