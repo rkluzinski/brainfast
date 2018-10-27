@@ -51,11 +51,9 @@ void BFCompilerX86::compile(const char *filename) {
 	clearLoop(offset);
 	parser.consume(3);
       }
-      //disabling scanloops
-      else if (true && parser.isScanLoop()) {
-	pointerOp(offset);
-	offset = 0;
+      else if (parser.isScanLoop()) {
 	scanLoop(parser, offset);
+	offset = 0;
       }
       else if (parser.isMultiplyLoop()) {
 	multiplyLoop(parser, offset);
@@ -94,7 +92,7 @@ void BFCompilerX86::programHeader() {
   assembler->call(imm_ptr(calloc));
 
   //check if calloc returned null
-  assembler->cmp(x86::rax, NULL);
+  assembler->cmp(x86::rax, 0);
   assembler->jne(MALLOC_OK);
 
   //if null, return 1
@@ -227,9 +225,8 @@ void *_memrchr(void *ptr, int value, size_t size) {
 void BFCompilerX86::scanLeft(addr_offset offset) {
   assembler->mov(x86::rdi, mem_start);
   assembler->mov(x86::rsi, 0);
-  assembler->mov(x86::rdx, ptr);
+  assembler->lea(x86::rdx, x86::byte_ptr(ptr, offset + 1));
   assembler->sub(x86::rdx, mem_start);
-  assembler->add(x86::rdx, 1);
 
   assembler->call(imm_ptr(_memrchr));
   assembler->mov(ptr, x86::rax);
@@ -237,11 +234,12 @@ void BFCompilerX86::scanLeft(addr_offset offset) {
 
 //emits optimized code for scanning right
 void BFCompilerX86::scanRight(addr_offset offset) {
-  assembler->mov(x86::rdi, ptr);
+  assembler->lea(x86::rdi, x86::byte_ptr(ptr, offset));
   assembler->mov(x86::rsi, 0);
   assembler->mov(x86::rdx, mem_start);
   assembler->add(x86::rdx, mem_size);
   assembler->sub(x86::rdx, ptr);
+  assembler->sub(x86::rdx, offset);
 
   assembler->call(imm_ptr(_memchr));
   assembler->mov(ptr, x86::rax);
