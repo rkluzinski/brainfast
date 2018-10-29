@@ -18,10 +18,12 @@ set(ASMJIT_DIR "asmjit")
 include("${ASMJIT_DIR}/CMakeLists.txt")
 include_directories("${ASMJIT_DIR}/src")
 
+# build executable
 add_executable(bf
   main.cpp
   parser.cpp
   compiler.cpp
   ${ASMJIT_SRC})
 
+# link asmjit depends
 target_link_libraries(bf ${ASMJIT_DEPS})

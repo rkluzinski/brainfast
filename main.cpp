@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   }
 
   if (fn(0xffff) == 1) {
-    cout << "malloc failed!" << endl;
+    cout << "failed to allocate memory!" << endl;
   }
   
   return 0;
