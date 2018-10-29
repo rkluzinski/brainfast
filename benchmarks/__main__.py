@@ -3,7 +3,7 @@ from time import time
 from resource import getrusage, RUSAGE_CHILDREN
 
 
-command = "./brainfast benchmarks/{0}.b < benchmarks/{0}.in > benchmarks/{0}.out"
+command = "build/bf benchmarks/{0}.b < benchmarks/{0}.in > benchmarks/{0}.out"
 
 programs = [
     "awib-0.4",

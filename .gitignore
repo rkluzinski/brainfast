@@ -1,9 +1,7 @@
-brainfast
+build/
 benchmarks/__pycache__
 test/__pycache__
-env.sh
 TODO
 
 *~
-*.o
 

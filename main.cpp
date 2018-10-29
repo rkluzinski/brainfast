@@ -7,18 +7,13 @@ using namespace asmjit;
 
 int main(int argc, char **argv) {
   if (argc < 2) {
-    cout << "usage: ./brainfast filename" << endl;
+    cout << "usage: " << argv[0] << " [OPTIONS] filename" << endl;
     return 0;
   }
 
   JitRuntime runtime;
-
-  //FileLogger logger(stdout);
-  
   CodeHolder code;
   code.init(runtime.getCodeInfo());
-  //code.setLogger(&logger);
-  
   X86Assembler assembler(&code);
 
   BFCompilerX86 compiler(&assembler);

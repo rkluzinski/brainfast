@@ -1,6 +1,6 @@
 import subprocess
 
-command = "./brainfast test/{0}.b"
+command = "build/bf test/{0}.b"
 
 programs = [
     "bitwidth"
