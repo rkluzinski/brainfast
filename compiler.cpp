@@ -112,17 +112,14 @@ void BFCompilerX86::programFooter() {
   assembler->call(imm_ptr(free));
 
   //returns 0
-  assembler->mov(x86::rax, 0);
+  assembler->xor_(x86::rax, x86::rax);
   assembler->ret();
 }
 
 //emits pointer add/sub operation
 void BFCompilerX86::pointerOp(addr_offset offset) {
-  if (offset > 0)
-    assembler->add(ptr, offset);
-  else if (offset < 0)
-    assembler->sub(ptr, -offset);
-  //emit nothing if offset is 0
+  if (offset != 0)
+    assembler->lea(ptr, x86::byte_ptr(ptr, offset));
 }
 
 //emits add/sub immediate operation
@@ -224,7 +221,7 @@ void *_memrchr(void *ptr, int value, size_t size) {
 //emits optimzied code for scanning left
 void BFCompilerX86::scanLeft(addr_offset offset) {
   assembler->mov(x86::rdi, mem_start);
-  assembler->mov(x86::rsi, 0);
+  assembler->xor_(x86::rsi, x86::rsi);
   assembler->lea(x86::rdx, x86::byte_ptr(ptr, offset + 1));
   assembler->sub(x86::rdx, mem_start);
 
@@ -235,7 +232,7 @@ void BFCompilerX86::scanLeft(addr_offset offset) {
 //emits optimized code for scanning right
 void BFCompilerX86::scanRight(addr_offset offset) {
   assembler->lea(x86::rdi, x86::byte_ptr(ptr, offset));
-  assembler->mov(x86::rsi, 0);
+  assembler->xor_(x86::rsi, x86::rsi);
   assembler->mov(x86::rdx, mem_start);
   assembler->add(x86::rdx, mem_size);
   assembler->sub(x86::rdx, ptr);
