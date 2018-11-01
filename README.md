@@ -98,7 +98,7 @@ total                   3.050    3.002    0.004
 * http://www.hevanet.com/cristofd/brainfuck/ - A great introduction to brainf\*ck.
 * https://github.com/rdebath/Brainfuck - A very comprehensive test program.
 * https://github.com/matslina/bfoptimization - A collection of benchmarks.
-* http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html - A descriptions of various optimization strategies.
+* http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html - Various optimization strategies.
 * https://eli.thegreenplace.net/ - Other work in using JIT compilation with brainf\*ck.
 * http://www.nynaeve.net/?p=64 - Assembly optimization techniques.
 
