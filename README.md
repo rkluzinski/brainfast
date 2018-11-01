@@ -100,4 +100,5 @@ total                   3.050    3.002    0.004
 * https://github.com/matslina/bfoptimization - A collection of benchmarks.
 * http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html - A descriptions of various optimization strategies.
 * https://eli.thegreenplace.net/ - Other work in using JIT compilation with brainf\*ck.
+* http://www.nynaeve.net/?p=64 - Assembly optimization techniques.
 

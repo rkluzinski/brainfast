@@ -4,6 +4,7 @@
 #include <string>
 
 using namespace asmjit;
+using namespace asmjit::x86;
 
 //loop constructor
 BFCompilerX86::Loop::Loop(Label _start, Label _end)
@@ -85,59 +86,70 @@ void BFCompilerX86::compile(const char *filename) {
 //emits brainfuck assembly program header
 void BFCompilerX86::programHeader() {
   Label MALLOC_OK = assembler->newLabel();
-  assembler->mov(mem_size, x86::rdi);
+  assembler->mov(mem_size, rdi);
   
   //calls calloc, rdi already holds the size argument
-  assembler->mov(x86::rsi, 1);
+  assembler->mov(rsi, 1);
   assembler->call(imm_ptr(calloc));
 
   //check if calloc returned null
-  assembler->cmp(x86::rax, 0);
+  assembler->cmp(rax, 0);
   assembler->jne(MALLOC_OK);
 
   //if null, return 1
-  assembler->mov(x86::rax, 1);
+  assembler->mov(rax, 1);
   assembler->ret();
 
-  //stores address of the calloc'd memory
   assembler->bind(MALLOC_OK);
-  assembler->mov(ptr, x86::rax);
+
+  //preserve r12-r14
+  assembler->push(r12);
+  assembler->push(r13);
+  assembler->push(r14);
+
+  //stores address of the calloc'd memory
+  assembler->mov(data_ptr, rax);
   assembler->mov(mem_start, x86::rax);
 }
 
 //emits brainfuck assembly program footer
 void BFCompilerX86::programFooter() {
   //free allocated memory
-  assembler->mov(x86::rdi, mem_start);
+  assembler->mov(rdi, mem_start);
   assembler->call(imm_ptr(free));
 
+  //preserve r12-r14
+  assembler->pop(r14);
+  assembler->pop(r13);
+  assembler->pop(r12);
+
   //returns 0
-  assembler->xor_(x86::rax, x86::rax);
+  assembler->xor_(rax, rax);
   assembler->ret();
 }
 
 //emits pointer add/sub operation
 void BFCompilerX86::pointerOp(addr_offset offset) {
   if (offset != 0)
-    assembler->lea(ptr, x86::byte_ptr(ptr, offset));
+    assembler->lea(data_ptr, byte_ptr(data_ptr, offset));
 }
 
 //emits add/sub immediate operation
 void BFCompilerX86::arithmeticOp(addr_offset offset, imm_value imm) {
   if (imm != 0)
-    assembler->add(x86::byte_ptr(ptr, offset), imm);
+    assembler->add(byte_ptr(data_ptr, offset), imm);
 }
 
 //emits write byte operation
 void BFCompilerX86::byteOutOp(addr_offset offset) {
-  assembler->movzx(x86::rdi, x86::byte_ptr(ptr, offset));
+  assembler->movzx(rdi, byte_ptr(data_ptr, offset));
   assembler->call(imm_ptr(putchar));
 }
 
 //emits read byte operation
 void BFCompilerX86::byteInOp(addr_offset offset) {
   assembler->call(imm_ptr(getchar));
-  assembler->mov(x86::byte_ptr(ptr, offset), x86::al);
+  assembler->mov(byte_ptr(data_ptr, offset), al);
 }
 
 //emits loop start
@@ -145,7 +157,7 @@ void BFCompilerX86::loopStart() {
   Loop loop(assembler->newLabel(), assembler->newLabel());
   loopStack.push_back(loop);
   
-  assembler->cmp(x86::byte_ptr(ptr), 0);
+  assembler->cmp(byte_ptr(data_ptr), 0);
   assembler->je(loop.end);
   assembler->bind(loop.start);
 }
@@ -155,16 +167,17 @@ void BFCompilerX86::loopEnd() {
   Loop loop = loopStack.back();
   loopStack.pop_back();
   
-  assembler->cmp(x86::byte_ptr(ptr), 0);
+  assembler->cmp(byte_ptr(data_ptr), 0);
   assembler->jne(loop.start);
   assembler->bind(loop.end);
 }
 
 //emits a multiply accumulate operation
 void BFCompilerX86::multiplyAccumulate(addr_offset src, addr_offset dst, imm_value imm) {
-  assembler->mov(x86::rax, imm);
-  assembler->mul(x86::byte_ptr(ptr, src));
-  assembler->add(x86::byte_ptr(ptr, dst), x86::al);
+  //dst = dst + src * imm
+  assembler->mov(al, imm);
+  assembler->mul(byte_ptr(data_ptr, src));
+  assembler->add(byte_ptr(data_ptr, dst), al);
 }
 
 //sums sequential arithmetic operations
@@ -193,7 +206,7 @@ imm_value BFCompilerX86::arithmeticSum(BFParser &p) {
 
 //emits optimized clear loop code
 void BFCompilerX86::clearLoop(addr_offset offset) {
-  assembler->mov(x86::byte_ptr(ptr, offset), 0);
+  assembler->mov(byte_ptr(data_ptr, offset), 0);
 }
 
 //emits optimized scan loop code
@@ -209,37 +222,37 @@ void BFCompilerX86::scanLoop(BFParser &parser, addr_offset offset) {
 }
 
 //memchr is overloaded and cannot be called directly by asmjit
-void *_memchr(void *ptr, int value, size_t size) {
-  return memchr(ptr, value, size);
+void *_memchr(void *_ptr, int value, size_t size) {
+  return memchr(_ptr, value, size);
 }
 
 //memrchr is overloaded and cannot be called directly by asmjit
-void *_memrchr(void *ptr, int value, size_t size) {
-  return memrchr(ptr, value, size);
+void *_memrchr(void *_ptr, int value, size_t size) {
+  return memrchr(_ptr, value, size);
 }
 
 //emits optimzied code for scanning left
 void BFCompilerX86::scanLeft(addr_offset offset) {
-  assembler->mov(x86::rdi, mem_start);
-  assembler->xor_(x86::rsi, x86::rsi);
-  assembler->lea(x86::rdx, x86::byte_ptr(ptr, offset + 1));
-  assembler->sub(x86::rdx, mem_start);
+  assembler->mov(rdi, mem_start);
+  assembler->xor_(rsi, rsi);
+  assembler->lea(rdx, byte_ptr(data_ptr, offset + 1));
+  assembler->sub(rdx, mem_start);
 
   assembler->call(imm_ptr(_memrchr));
-  assembler->mov(ptr, x86::rax);
+  assembler->mov(data_ptr, rax);
 }
 
 //emits optimized code for scanning right
 void BFCompilerX86::scanRight(addr_offset offset) {
-  assembler->lea(x86::rdi, x86::byte_ptr(ptr, offset));
-  assembler->xor_(x86::rsi, x86::rsi);
-  assembler->mov(x86::rdx, mem_start);
-  assembler->add(x86::rdx, mem_size);
-  assembler->sub(x86::rdx, ptr);
-  assembler->sub(x86::rdx, offset);
+  assembler->lea(rdi, byte_ptr(data_ptr, offset));
+  assembler->xor_(rsi, rsi);
+  assembler->mov(rdx, mem_start);
+  assembler->add(rdx, mem_size);
+  assembler->sub(rdx, data_ptr);
+  assembler->sub(rdx, offset);
 
   assembler->call(imm_ptr(_memchr));
-  assembler->mov(ptr, x86::rax);
+  assembler->mov(data_ptr, rax);
 }
 
 //emits optimized multiply loop code
@@ -249,7 +262,7 @@ void BFCompilerX86::multiplyLoop(BFParser &parser, addr_offset offset) {
 
   //skip if loop counter zero
   Label isZero = assembler->newLabel();
-  assembler->cmp(x86::byte_ptr(ptr, offset), 0);
+  assembler->cmp(byte_ptr(data_ptr, offset), 0);
   assembler->je(isZero);
 
   parser.next();
@@ -283,7 +296,7 @@ void BFCompilerX86::multiplyLoop(BFParser &parser, addr_offset offset) {
   }
 
   //clear loop counter
-  assembler->mov(x86::byte_ptr(ptr, offset), 0);
+  assembler->mov(byte_ptr(data_ptr, offset), 0);
   assembler->bind(isZero);
 }
 

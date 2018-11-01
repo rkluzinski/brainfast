@@ -15,7 +15,7 @@ typedef int (*BFProgram)(int);
 class BFCompilerX86 {
  private:
   asmjit::X86Assembler *assembler;
-  asmjit::X86Gp ptr = asmjit::x86::r12;
+  asmjit::X86Gp data_ptr = asmjit::x86::r12;
   asmjit::X86Gp mem_start = asmjit::x86::r13;
   asmjit::X86Gp mem_size = asmjit::x86::r14;
 

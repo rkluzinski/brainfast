@@ -7,7 +7,7 @@ using namespace asmjit;
 
 int main(int argc, char **argv) {
   if (argc < 2) {
-    cout << "usage: " << argv[0] << " [OPTIONS] filename" << endl;
+    cout << "usage: " << argv[0] << " [-m MEMORY_SIZE] filename" << endl;
     return 0;
   }
 

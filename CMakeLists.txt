@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(Brainfast)
 
 # project build type
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 # asmjit compilation flags
 set(ASMJIT_EMBED TRUE)
@@ -11,7 +11,7 @@ set(ASMJIT_DISABLE_BUILDER TRUE)
 set(ASMJIT_DISABLE_COMPILER TRUE)
 set(ASMJIT_DISABLE_LOGGING TRUE)
 set(ASMJIT_DISABLE_TEXT TRUE)
-set(ASMJIT_DISABLE_VALIDATION TRUE)
+# set(ASMJIT_DISABLE_VALIDATION TRUE)
 
 # asmjit build directory
 set(ASMJIT_DIR "asmjit")
