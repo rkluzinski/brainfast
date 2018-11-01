@@ -1,6 +1,6 @@
 # Brainfast
 
-Brainfast is a brainf*ck interpreter capable of running programs very quickly. The brainf*ck source is optimized and recompiled to native x86-64 machine code using asmjit.
+Brainfast is a brainf\*ck interpreter capable of running programs very quickly. The brainf\*ck source is optimized and recompiled to native x86-64 machine code using asmjit.
 
 ## Getting Started
 
@@ -56,14 +56,14 @@ $ cd ..
 ```
 
 The testing program is contained in the test/ directory. It can be run automatically using python3.
-The testing program bitwidth.b is from rdebath's [brainf*ck](https://github.com/rdebath/Brainfuck) repository. It can be run with Python3 and should display 'Hello World! 255'.
+The testing program bitwidth.b is from rdebath's [brainf\*ck](https://github.com/rdebath/Brainfuck) repository. It can be run with Python3 and should display 'Hello World! 255'.
 
 ```
 $ python3 test/
 Running bitwidth.b: Hello World! 255
 ```
 
-The benchmarks are run in similar manner as the tests. The real, user and system time will be displayed for each program and the totals. The files used for benchmarking are taken from matslina's [brainf*ck](https://github.com/matslina/bfoptimizatio) repository.
+The benchmarks are run in similar manner as the tests. The real, user and system time will be displayed for each program and the totals. The files used for benchmarking are taken from matslina's [brainf\*ck](https://github.com/matslina/bfoptimization) repository.
 
 Shown below is output from a Lubuntu 18.04 VM running on a Windows 10 Host with an Intel(R) Core(TM) i5-8250U CPU.
 
@@ -95,9 +95,9 @@ total                   3.050    3.002    0.004
 
 ## Acknowledgments
 
-* http://www.hevanet.com/cristofd/brainfuck/ - A great introduction to brainf*ck.
+* http://www.hevanet.com/cristofd/brainfuck/ - A great introduction to brainf\*ck.
 * https://github.com/rdebath/Brainfuck - A very comprehensive test program.
 * https://github.com/matslina/bfoptimization - A collection of benchmarks.
 * http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html - A descriptions of various optimization strategies.
-* https://eli.thegreenplace.net/ - Other work in using JIT compilation with brainf*ck.
+* https://eli.thegreenplace.net/ - Other work in using JIT compilation with brainf\*ck.
 
