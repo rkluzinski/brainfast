@@ -68,19 +68,20 @@ The benchmarks are run in similar manner as the tests. The real, user and system
 
 Programs that output to STDOUT lots will run faster in the benchmark. This is because the output is being piped to a file and does not have to be displayed in the terminal.
 
-Shown below is output from a Lubuntu 18.04 VM running on a Windows 10 Host with an Intel(R) Core(TM) i5-8250U CPU.
+Shown below is output from the Brainfast benchmark on Ubuntu 18.04 with an AMD Ryzen 7 2700X CPU.
 
 ```
 $ python3 benchmarks/
 program                  real     user      sys
 ------------------------------------------------
-awib-0.4                0.046    0.032    0.004
-dbfi                    0.850    0.842    0.000
-factor                  0.773    0.762    0.000
-hanoi                   0.060    0.055    0.000
-long                    0.225    0.220    0.000
-mandelbrot              1.098    1.090    0.000
-total                   3.050    3.002    0.004
+awib-0.4                0.017    0.017    0.000
+dbfi                    0.646    0.646    0.000
+factor                  0.703    0.702    0.000
+hanoi                   0.056    0.052    0.004
+long                    0.229    0.221    0.008
+mandelbrot              0.914    0.914    0.000
+total                   2.565    2.551    0.012
+
 ```
 
 ## Porting Brainfasts
