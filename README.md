@@ -44,7 +44,7 @@ The executable 'bf' should be created in the build directory. Running it with no
 
 ```
 $ ./bf
-usage: ./bf [OPTIONS] filename
+usage: ./bf [-m MEMORY_SIZE] filename
 ```
 
 ## Running the tests and benchmarks.
