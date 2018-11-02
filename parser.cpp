@@ -1,11 +1,20 @@
 #include "parser.h"
+#include <iostream>
 #include <fstream>
 
 //constructor
 //reads the file and stores bf instructions in string
-BFParser::BFParser(const char *filename) {
+BFParser::BFParser(const char *filename) : index(0) {
   std::ifstream infile(filename, std::ios::in);
   char instruction;
+
+  //for checking bracket balance
+  int bracket_count = 0;
+
+  if (!infile.is_open()) {
+    std::cout << "Could not open file: " << filename << "!" << std::endl;
+    exit(0);
+  }
   
   while (infile >> instruction) {
     switch (instruction) {
@@ -15,15 +24,29 @@ BFParser::BFParser(const char *filename) {
     case '-':
     case '.':
     case ',':
+      instructions.push_back(instruction);
+      break;
+      
     case '[':
+      instructions.push_back(instruction);
+      bracket_count++;
+      break;
+      
     case ']':
       instructions.push_back(instruction);
+      if (bracket_count-- == 0) {
+	std::cout << "Missing opening bracket '['!" << std::endl;
+	exit(0);
+      }
       
     default: break;
     }
   }
 
-  index = 0;
+  if (bracket_count != 0) {
+    std::cout << "Missing closing bracket ']'!" << std::endl;
+    exit(0);
+  }
 }
 
 //checks if there are more tokens

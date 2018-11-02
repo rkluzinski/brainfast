@@ -5,21 +5,31 @@
 using namespace std;
 using namespace asmjit;
 
-#define DEFAULT_MEMORY_SIZE 0xffff
-
-//parses the command line arguments
-int parse_arguments() {
-
-}
+#define DEFAULT_MEMORY_SIZE 65536
 
 int main(int argc, char **argv) {
+  //default values
+  int memory_size = DEFAULT_MEMORY_SIZE;
+  char *filename = NULL;
+
+  //basic way to parse command line arguments
   if (argc < 2) {
-    cout << "usage: " << argv[0] << " [-m MEMORY_SIZE] filename" << endl;
-    return 0;
+    cout << "usage: " << argv[0] << " [MEMORY_SIZE] filename" << endl;
+    exit(0);
+  }
+  else if (argc == 2) {
+    filename = argv[1];
+  }
+  else {
+    memory_size = atoi(argv[1]);
+    filename = argv[2];
   }
 
-  int memory_size = DEFAULT_MEMORY_SIZE;
-  const char *filename = argv[1];
+  //validate arguments passed
+  if (memory_size <= 0) {
+    cout << "Invalid memory size!" << endl;
+    exit(0);
+  }
 
   //prepares the asmjit environment
   JitRuntime runtime;
