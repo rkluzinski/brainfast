@@ -1,3 +1,7 @@
+"""
+This program runs bitwidth.b with brainfast.
+It is used for general purpose testing.
+"""
 import subprocess
 
 command = "build/bf test/{0}.b"
@@ -5,6 +9,7 @@ command = "build/bf test/{0}.b"
 programs = [
     "bitwidth"
     ]
+
 
 def main():
     for program in programs:

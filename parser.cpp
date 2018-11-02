@@ -26,11 +26,6 @@ BFParser::BFParser(const char *filename) {
   index = 0;
 }
 
-//destructor
-BFParser::~BFParser() {
-  return;
-}
-
 //checks if there are more tokens
 bool BFParser::hasNext() {
   return index != instructions.size();
@@ -52,6 +47,7 @@ void BFParser::consume(int count) {
 }
 
 //check if the next sequence is a clear loop
+//clear loop: [-] or [+]
 bool BFParser::isClearLoop() {
   if (instructions[index] != '[') {
     return false;
@@ -68,6 +64,7 @@ bool BFParser::isClearLoop() {
 }
 
 //check if the next sequence is a scan loop
+//scan loop: [>] or [<]
 bool BFParser::isScanLoop() {
   if (instructions[index] != '[') {
     return false;
@@ -84,6 +81,9 @@ bool BFParser::isScanLoop() {
 }
 
 //check if the next sequence is a multiply loop
+//multiply loop: [{any sequence of >, <, +, >}] where
+//the net pointer offset is zero (number of > == number of <)
+//one is subtracted from the first cell each iteration
 bool BFParser::isMultiplyLoop() {
   int counter_delta = 0;
   int ptr_delta = 0;

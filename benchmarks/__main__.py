@@ -1,7 +1,11 @@
+"""
+This program runs the benchmark programs in the benchmark folder.
+It computes the real, user and system time used by each program and 
+prints a table with the correspoding data, as well as the total.
+"""
 import subprocess
 from time import time
 from resource import getrusage, RUSAGE_CHILDREN
-
 
 command = "build/bf benchmarks/{0}.b < benchmarks/{0}.in > benchmarks/{0}.out"
 

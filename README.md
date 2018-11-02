@@ -65,6 +65,8 @@ Running bitwidth.b: Hello World! 255
 
 The benchmarks are run in similar manner as the tests. The real, user and system time will be displayed for each program and the totals. The files used for benchmarking are taken from matslina's [brainf\*ck](https://github.com/matslina/bfoptimization) repository.
 
+Programs that ouput lots to STDOUT will run faster in the benchmark. This is because the output is being piped to a file and does not have to be displayed in the terminal.
+
 Shown below is output from a Lubuntu 18.04 VM running on a Windows 10 Host with an Intel(R) Core(TM) i5-8250U CPU.
 
 ```
