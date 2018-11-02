@@ -94,7 +94,7 @@ void BFCompilerX86::compile(const char *filename) {
 //emits brainfuck assembly program header
 //memory size is passed to the brainfuck program via rdi
 //returns 1 on failure to allocate memory
-//  MOV r14, rdi   stores the program size
+//  MOV r14, rdi   stores the number of bytes availible to the program
 //  MOV rsi, 1     size of each cell, fixed at one byte
 //  CALL calloc
 //  CMP rax, 0
